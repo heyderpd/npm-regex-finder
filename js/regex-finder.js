@@ -95,7 +95,7 @@ var getFoundList = function (getResumeOf) {
 var startFind = function (config) {
   if (config.list === undefined) { throw 'regex-finder: param "list" is undefined' };
   if (config.path  === undefined) { throw 'regex-finder: param "path" is undefined' };
-  var getResumeOf = (config.getResumeOf === 'ALL' || config.getResumeOf === 'NOT_FOUND') ? config.getResumeOf : 'FOUND';
+  var getResumeOf = (config.getResumeOf === 'ALL' || config.getResumeOf === 'FOUND') ? config.getResumeOf : 'NOT_FOUND';
 
   var start, crono
   if (config.debug) { start = +new Date() }
