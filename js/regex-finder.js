@@ -1,4 +1,10 @@
 
+/*!
+ * regex-finder
+ * Copyright (c) 2016 heyderpd <heyderpd@gmail.com>
+ * ISC Licensed
+ */
+
 var getExtensionOfFile = function (filePath) {
   var Pattern = new RegExp("^[^\\n]*\\.([^.]*)", "i")
   var result = null;
