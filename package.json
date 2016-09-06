@@ -4,10 +4,15 @@
   "description": "search recursively in directory with the provided list",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "transpile": "babel js/ -d dist/"
   },
   "keywords": [
-    "find", "regex", "search", "directory", "recursive", "path"
+    "find",
+    "regex",
+    "search",
+    "directory",
+    "recursive",
+    "path"
   ],
   "author": "NPM regex-finder <heyderpd@gmail.com> (http://heyderpd.github.io)",
   "repository": {
@@ -17,5 +22,11 @@
   "bugs": {
     "url": "https://github.com/heyderpd/npm-regex-finder/issues"
   },
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.14.0"
+  },
+  "dependencies": {
+    "fs-extra": "^0.30.0"
+  }
 }

@@ -1,3 +1,4 @@
+"use strict";
 
 /*!
  * regex-finder
@@ -5,37 +6,37 @@
  * ISC Licensed
  */
 
-var getExtensionOfFile = function (filePath) {
-  var Pattern = new RegExp("^[^\\n]*\\.([^.]*)", "i")
+var getExtensionOfFile = function getExtensionOfFile(filePath) {
+  var Pattern = new RegExp("^[^\\n]*\\.([^.]*)", "i");
   var result = null;
   if ((result = Pattern.exec(filePath)) !== null) {
     return result[1];
   }
   return undefined;
-}
+};
 
-var verifyExtension = function (filePath) {
+var verifyExtension = function verifyExtension(filePath) {
   var ext = getExtensionOfFile(filePath);
   return !!validExtension[ext];
-}
+};
 
-var recusiveFindInPath = function (basePath) {
+var recusiveFindInPath = function recusiveFindInPath(basePath) {
   var list = fs.readdirSync(basePath);
   doEach(list, function (nodo) {
     var nodoPath = basePath + nodo;
     var stats = fs.statSync(nodoPath);
-    if (stats.isDirectory()){
-      recusiveFindInPath(nodoPath +'/');
-    } else if (stats.isFile()){
-      if(verifyExtension(nodo)){
-        findInFile(nodoPath);      
+    if (stats.isDirectory()) {
+      recusiveFindInPath(nodoPath + '/');
+    } else if (stats.isFile()) {
+      if (verifyExtension(nodo)) {
+        findInFile(nodoPath);
       }
     }
     return;
   });
-}
+};
 
-var updateFoundList = function (word, force) {
+var updateFoundList = function updateFoundList(word, force) {
   if (word !== undefined && findList[word] !== undefined) {
     findList[word] = true;
     force = true;
@@ -58,11 +59,10 @@ var updateFoundList = function (word, force) {
   return false;
 };
 
-var findInFile = function (filePath) {
-  if (findPattern === undefined)
-    return;
-  
-  var fileRaw = fs.readFileSync(filePath, {flag: 'r'});
+var findInFile = function findInFile(filePath) {
+  if (findPattern === undefined) return;
+
+  var fileRaw = fs.readFileSync(filePath, { flag: 'r' });
   var persist = true;
   while (persist) {
     var Pattern = new RegExp(findPattern, "im");
@@ -70,16 +70,16 @@ var findInFile = function (filePath) {
     if ((result = Pattern.exec(fileRaw)) !== null) {
       persist = updateFoundList(result[1]);
     } else {
-      persist = false;      
+      persist = false;
     }
   }
-}
+};
 
-var getFoundList = function (getResumeOf) {
+var getFoundList = function getFoundList(getResumeOf) {
   var resume = {
     found: [],
-    notFound: [],
-  }
+    notFound: []
+  };
   doEach(findList, function (state, word) {
     if (state) {
       resume.found.push(word);
@@ -93,19 +93,25 @@ var getFoundList = function (getResumeOf) {
     if (getResumeOf === 'FOUND') {
       return resume.found;
     } else {
-      return resume.notFound;    
+      return resume.notFound;
     }
   }
 };
 
-var startFind = function (config) {
-  if (config.list === undefined) { throw 'regex-finder: param "list" is undefined' };
-  if (config.path  === undefined) { throw 'regex-finder: param "path" is undefined' };
-  var getResumeOf = (config.getResumeOf === 'ALL' || config.getResumeOf === 'FOUND') ? config.getResumeOf : 'NOT_FOUND';
+var startFind = function startFind(config) {
+  if (config.list === undefined) {
+    throw 'regex-finder: param "list" is undefined';
+  };
+  if (config.path === undefined) {
+    throw 'regex-finder: param "path" is undefined';
+  };
+  var getResumeOf = config.getResumeOf === 'ALL' || config.getResumeOf === 'FOUND' ? config.getResumeOf : 'NOT_FOUND';
 
-  var start, crono
-  if (config.debug) { start = +new Date() }
-  
+  var start, crono;
+  if (config.debug) {
+    start = +new Date();
+  }
+
   doEach(config.list, function (word) {
     findList[word] = false;
   });
@@ -113,13 +119,17 @@ var startFind = function (config) {
   recusiveFindInPath(config.path);
 
   if (config.debug) {
-    crono = (+new Date() -start) /1000;
-    console.log(`\nregex-finder process in ${crono} seconds`);
+    crono = (+new Date() - start) / 1000;
+    console.log("\nregex-finder process in " + crono + " seconds");
   }
   return getFoundList(getResumeOf);
-}
+};
 
-var doEach = function (obj, func) { Object.keys(obj).forEach(n => func(obj[n], n)) };
+var doEach = function doEach(obj, func) {
+  Object.keys(obj).forEach(function (n) {
+    return func(obj[n], n);
+  });
+};
 
 var validExtension = { 'html': true, 'js': true, json: true };
 var patternBase = '[^\\w-](__LIST__)[^\\w-]';
@@ -130,4 +140,4 @@ var fs = require('fs-extra');
 
 module.exports = {
   find: startFind
-}
+};

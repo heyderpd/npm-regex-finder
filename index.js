@@ -1,1 +1,1 @@
-module.exports = require('./js/regex-finder');
+module.exports = require('./dist/regex-finder');

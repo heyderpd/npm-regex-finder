@@ -3,6 +3,13 @@
 If you need create static file from itens you use in given directory.
 Use this plugin! For now only help to find the html id is used to svg extractor.
 
+## First Steps NO MORE!
+Now is is in es2015, don't need first steps!
+Thanks for:
+[npm~lucasmreis](https://www.npmjs.com/~lucasmreis)
+
+npm install npm install regex-finder
+
 ## Example:
 Example:
 ```javascript
