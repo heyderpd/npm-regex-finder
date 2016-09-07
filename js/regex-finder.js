@@ -5,25 +5,29 @@
  * ISC Licensed
  */
 
-var getExtensionOfFile = function (filePath) {
-  var Pattern = new RegExp("^[^\\n]*\\.([^.]*)", "i")
-  var result = null;
+const getExtensionOfFile = function (filePath) {
+  const Pattern = new RegExp("^[^\\n]*\\.([^.]*)", "i")
+  let result = null;
   if ((result = Pattern.exec(filePath)) !== null) {
     return result[1];
   }
   return undefined;
 }
 
-var verifyExtension = function (filePath) {
-  var ext = getExtensionOfFile(filePath);
+const verifyExtension = function (filePath) {
+  const ext = getExtensionOfFile(filePath);
   return !!validExtension[ext];
 }
 
-var recusiveFindInPath = function (basePath) {
-  var list = fs.readdirSync(basePath);
+const recusiveFindInPath = function (basePath) {
+  basePath = basePath[basePath.length -1] === '/' ? basePath : basePath +'/' ;
+  const list = fs.readdirSync(basePath);
   doEach(list, function (nodo) {
-    var nodoPath = basePath + nodo;
-    var stats = fs.statSync(nodoPath);
+    if (findPattern === undefined)
+      return;
+    
+    const nodoPath = basePath + nodo;
+    const stats = fs.statSync(nodoPath);
     if (stats.isDirectory()){
       recusiveFindInPath(nodoPath +'/');
     } else if (stats.isFile()){
@@ -31,24 +35,41 @@ var recusiveFindInPath = function (basePath) {
         findInFile(nodoPath);      
       }
     }
-    return;
   });
 }
 
-var updateFoundList = function (word, force) {
+const findInPathsList = function (pathsList) {
+  doEach(pathsList, function (pathItem) {
+    if (findPattern === undefined)
+      return;
+    
+    const stats = fs.statSync(pathItem);
+    if (stats.isDirectory()){
+      recusiveFindInPath(pathItem);
+    } else if (stats.isFile()){
+      if(verifyExtension(pathItem)){
+        findInFile(pathItem);      
+      }
+    }
+  });
+}
+
+const updateFoundList = function (word, force) {
   if (word !== undefined && findList[word] !== undefined) {
     findList[word] = true;
     force = true;
   }
   if (force) {
-    var newList = [];
+    // convert object to array
+    let newList = [];
     doEach(findList, function (state, word) {
       if (!state) {
         newList.push(word);
       }
     });
+    // create new pattern with array
     if (newList.length) {
-      var prePattern = newList.join("|");
+      const prePattern = newList.join("|");
       findPattern = patternBase.replace("__LIST__", prePattern);
       return true;
     } else {
@@ -58,15 +79,22 @@ var updateFoundList = function (word, force) {
   return false;
 };
 
-var findInFile = function (filePath) {
+const initializeFoundList = function (list) {
+  doEach(list, function (word) {
+    findList[word] = false;
+  });
+  updateFoundList(null, true);
+}
+
+const findInFile = function (filePath) {
   if (findPattern === undefined)
     return;
   
-  var fileRaw = fs.readFileSync(filePath, {flag: 'r'});
-  var persist = true;
+  const fileRaw = fs.readFileSync(filePath, {flag: 'r'});
+  let persist = true;
   while (persist) {
-    var Pattern = new RegExp(findPattern, "im");
-    var result = null;
+    const Pattern = new RegExp(findPattern, "im");
+    let result = null;
     if ((result = Pattern.exec(fileRaw)) !== null) {
       persist = updateFoundList(result[1]);
     } else {
@@ -75,8 +103,8 @@ var findInFile = function (filePath) {
   }
 }
 
-var getFoundList = function (getResumeOf) {
-  var resume = {
+const getFoundList = function (getResumeOf) {
+  const resume = {
     found: [],
     notFound: [],
   }
@@ -98,35 +126,49 @@ var getFoundList = function (getResumeOf) {
   }
 };
 
-var startFind = function (config) {
+const validatePathList = function (pathList) {
+  doEach(pathList, function (path) {
+    let valid = fs.existsSync(path);
+    if (valid) {
+      let stats = fs.statSync(path);
+      valid = stats.isDirectory() || stats.isFile() ;
+    }
+    if (!valid)
+      throw new Error(`regex-finder: param "path" don\'t have a valid path list.\n    path:"${path}" is invalid`);
+  });
+};
+
+const startFind = function (config) {
   if (config.list === undefined) { throw 'regex-finder: param "list" is undefined' };
   if (config.path  === undefined) { throw 'regex-finder: param "path" is undefined' };
-  var getResumeOf = (config.getResumeOf === 'ALL' || config.getResumeOf === 'FOUND') ? config.getResumeOf : 'NOT_FOUND';
+  config.path = typeof(config.path) === 'string' ? [config.path] : config.path ;
+  validatePathList(config.path);
 
-  var start, crono
+  const getResumeOf = (config.getResumeOf === 'ALL' || config.getResumeOf === 'FOUND') ? config.getResumeOf : 'NOT_FOUND';
+  let start, crono
   if (config.debug) { start = +new Date() }
+
+  // initizlize list's'
+  initializeFoundList(config.list);
   
-  doEach(config.list, function (word) {
-    findList[word] = false;
-  });
-  updateFoundList(null, true);
-  recusiveFindInPath(config.path);
+  // find in directory
+  findInPathsList(config.path);
 
   if (config.debug) {
     crono = (+new Date() -start) /1000;
-    console.log(`\nregex-finder process in ${crono} seconds`);
+    console.log(`\nregex-finder process in ${crono} seconds\n`);
   }
   return getFoundList(getResumeOf);
 }
 
-var doEach = function (obj, func) { Object.keys(obj).forEach(n => func(obj[n], n)) };
+const doEach = function (obj, func) { Object.keys(obj).forEach(n => func(obj[n], n)) };
 
-var validExtension = { 'html': true, 'js': true, json: true };
-var patternBase = '[^\\w-](__LIST__)[^\\w-]';
-var findPattern = undefined;
-var findList = {};
+const validExtension = { 'html': true, 'js': true, 'json': true };
+let patternBase = '[^\\w-](__LIST__)[^\\w-]';
+let findPattern = undefined;
+let findList = {};
 
-var fs = require('fs-extra');
+const fs = require('fs-extra');
 
 module.exports = {
   find: startFind
