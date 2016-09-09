@@ -3,6 +3,10 @@
 If you need create static file from itens you use in given directory.
 Use this plugin! For now only help to find the html id is used to svg extractor.
 
+## New feature (bug fixed!!!)
+* Can pass multiple directory using array.
+* Pass a list of aceptable extesion to find (optional)
+
 ## First Steps NO MORE!
 Now use es2015, don't need first steps!
 Thanks for:
@@ -25,7 +29,8 @@ const resumeOf = 'FOUND'
 var notFound = find({
   list: list,
   path: directory,
-  getResumeOf: 'NOT_FOUND' // can be omited
+  extension: ['html', 'js', 'json'], // (optional)
+  getResumeOf: 'NOT_FOUND' // (can be omited)
 });
 
 notFound // this a new list of not found in directory

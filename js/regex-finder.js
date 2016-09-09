@@ -133,22 +133,44 @@ const validatePathList = function (pathList) {
       let stats = fs.statSync(path);
       valid = stats.isDirectory() || stats.isFile() ;
     }
-    if (!valid)
+    if (!valid) {
       throw new Error(`regex-finder: param "path" don\'t have a valid path list.\n    path:"${path}" is invalid`);
+    }
   });
+};
+
+const updateValidExtension = function (extension) {
+  if (extension === undefined) {
+    return;
+  }  
+  let tmpExtension = {}, count = 0;
+  doEach(extension, function (value, id) {
+    if (value && typeof(value) === 'string') {
+      tmpExtension[value] = true;
+      count += 1;
+    }
+  });
+  if (count > 0) {
+    validExtension = tmpExtension;
+  }
 };
 
 const startFind = function (config) {
   if (config.list === undefined) { throw 'regex-finder: param "list" is undefined' };
   if (config.path  === undefined) { throw 'regex-finder: param "path" is undefined' };
+  
   config.path = typeof(config.path) === 'string' ? [config.path] : config.path ;
   validatePathList(config.path);
+
+  config.extension = typeof(config.extension) === 'string' ? [config.extension] : config.extension ;
+  updateValidExtension(config.extension);
+
 
   const getResumeOf = (config.getResumeOf === 'ALL' || config.getResumeOf === 'FOUND') ? config.getResumeOf : 'NOT_FOUND';
   let start, crono
   if (config.debug) { start = +new Date() }
 
-  // initizlize list's'
+  // initialize list's'
   initializeFoundList(config.list);
   
   // find in directory
@@ -163,7 +185,7 @@ const startFind = function (config) {
 
 const doEach = function (obj, func) { Object.keys(obj).forEach(n => func(obj[n], n)) };
 
-const validExtension = { 'html': true, 'js': true, 'json': true };
+let validExtension = { 'html': true, 'js': true, 'json': true };
 let patternBase = '[^\\w-](__LIST__)[^\\w-]';
 let findPattern = undefined;
 let findList = {};

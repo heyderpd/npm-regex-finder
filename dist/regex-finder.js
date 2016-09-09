@@ -1,5 +1,7 @@
 "use strict";
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 /*!
  * regex-finder
  * Copyright (c) 2016 heyderpd <heyderpd@gmail.com>
@@ -21,8 +23,11 @@ var verifyExtension = function verifyExtension(filePath) {
 };
 
 var recusiveFindInPath = function recusiveFindInPath(basePath) {
+  basePath = basePath[basePath.length - 1] === '/' ? basePath : basePath + '/';
   var list = fs.readdirSync(basePath);
   doEach(list, function (nodo) {
+    if (findPattern === undefined) return;
+
     var nodoPath = basePath + nodo;
     var stats = fs.statSync(nodoPath);
     if (stats.isDirectory()) {
@@ -32,7 +37,21 @@ var recusiveFindInPath = function recusiveFindInPath(basePath) {
         findInFile(nodoPath);
       }
     }
-    return;
+  });
+};
+
+var findInPathsList = function findInPathsList(pathsList) {
+  doEach(pathsList, function (pathItem) {
+    if (findPattern === undefined) return;
+
+    var stats = fs.statSync(pathItem);
+    if (stats.isDirectory()) {
+      recusiveFindInPath(pathItem);
+    } else if (stats.isFile()) {
+      if (verifyExtension(pathItem)) {
+        findInFile(pathItem);
+      }
+    }
   });
 };
 
@@ -42,21 +61,36 @@ var updateFoundList = function updateFoundList(word, force) {
     force = true;
   }
   if (force) {
-    var newList = [];
-    doEach(findList, function (state, word) {
-      if (!state) {
-        newList.push(word);
+    var _ret = function () {
+      // convert object to array
+      var newList = [];
+      doEach(findList, function (state, word) {
+        if (!state) {
+          newList.push(word);
+        }
+      });
+      // create new pattern with array
+      if (newList.length) {
+        var prePattern = newList.join("|");
+        findPattern = patternBase.replace("__LIST__", prePattern);
+        return {
+          v: true
+        };
+      } else {
+        findPattern = undefined;
       }
-    });
-    if (newList.length) {
-      var prePattern = newList.join("|");
-      findPattern = patternBase.replace("__LIST__", prePattern);
-      return true;
-    } else {
-      findPattern = undefined;
-    }
+    }();
+
+    if ((typeof _ret === "undefined" ? "undefined" : _typeof(_ret)) === "object") return _ret.v;
   }
   return false;
+};
+
+var initializeFoundList = function initializeFoundList(list) {
+  doEach(list, function (word) {
+    findList[word] = false;
+  });
+  updateFoundList(null, true);
 };
 
 var findInFile = function findInFile(filePath) {
@@ -98,6 +132,36 @@ var getFoundList = function getFoundList(getResumeOf) {
   }
 };
 
+var validatePathList = function validatePathList(pathList) {
+  doEach(pathList, function (path) {
+    var valid = fs.existsSync(path);
+    if (valid) {
+      var stats = fs.statSync(path);
+      valid = stats.isDirectory() || stats.isFile();
+    }
+    if (!valid) {
+      throw new Error("regex-finder: param \"path\" don't have a valid path list.\n    path:\"" + path + "\" is invalid");
+    }
+  });
+};
+
+var updateValidExtension = function updateValidExtension(extension) {
+  if (extension === undefined) {
+    return;
+  }
+  var tmpExtension = {},
+      count = 0;
+  doEach(extension, function (value, id) {
+    if (value && typeof value === 'string') {
+      tmpExtension[value] = true;
+      count += 1;
+    }
+  });
+  if (count > 0) {
+    validExtension = tmpExtension;
+  }
+};
+
 var startFind = function startFind(config) {
   if (config.list === undefined) {
     throw 'regex-finder: param "list" is undefined';
@@ -105,22 +169,29 @@ var startFind = function startFind(config) {
   if (config.path === undefined) {
     throw 'regex-finder: param "path" is undefined';
   };
-  var getResumeOf = config.getResumeOf === 'ALL' || config.getResumeOf === 'FOUND' ? config.getResumeOf : 'NOT_FOUND';
 
-  var start, crono;
+  config.path = typeof config.path === 'string' ? [config.path] : config.path;
+  validatePathList(config.path);
+
+  config.extension = typeof config.extension === 'string' ? [config.extension] : config.extension;
+  updateValidExtension(config.extension);
+
+  var getResumeOf = config.getResumeOf === 'ALL' || config.getResumeOf === 'FOUND' ? config.getResumeOf : 'NOT_FOUND';
+  var start = void 0,
+      crono = void 0;
   if (config.debug) {
     start = +new Date();
   }
 
-  doEach(config.list, function (word) {
-    findList[word] = false;
-  });
-  updateFoundList(null, true);
-  recusiveFindInPath(config.path);
+  // initialize list's'
+  initializeFoundList(config.list);
+
+  // find in directory
+  findInPathsList(config.path);
 
   if (config.debug) {
     crono = (+new Date() - start) / 1000;
-    console.log("\nregex-finder process in " + crono + " seconds");
+    console.log("\nregex-finder process in " + crono + " seconds\n");
   }
   return getFoundList(getResumeOf);
 };
@@ -131,7 +202,7 @@ var doEach = function doEach(obj, func) {
   });
 };
 
-var validExtension = { 'html': true, 'js': true, json: true };
+var validExtension = { 'html': true, 'js': true, 'json': true };
 var patternBase = '[^\\w-](__LIST__)[^\\w-]';
 var findPattern = undefined;
 var findList = {};
