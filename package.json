@@ -1,6 +1,6 @@
 {
   "name": "regex-finder",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "description": "search recursively in directory with the provided list",
   "main": "index.js",
   "scripts": {

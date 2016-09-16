@@ -165,6 +165,7 @@ const startFind = function (config) {
   config.extension = typeof(config.extension) === 'string' ? [config.extension] : config.extension ;
   updateValidExtension(config.extension);
 
+  patternBase = typeof(config.pattern) === 'string' ? config.pattern : '(__LIST__)';
 
   const getResumeOf = (config.getResumeOf === 'ALL' || config.getResumeOf === 'FOUND') ? config.getResumeOf : 'NOT_FOUND';
   let start, crono
@@ -186,7 +187,7 @@ const startFind = function (config) {
 const doEach = function (obj, func) { Object.keys(obj).forEach(n => func(obj[n], n)) };
 
 let validExtension = { 'html': true, 'js': true, 'json': true };
-let patternBase = '[^\\w-](__LIST__)[^\\w-]';
+let patternBase = '';
 let findPattern = undefined;
 let findList = {};
 

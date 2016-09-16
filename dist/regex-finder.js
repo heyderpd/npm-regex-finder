@@ -176,6 +176,8 @@ var startFind = function startFind(config) {
   config.extension = typeof config.extension === 'string' ? [config.extension] : config.extension;
   updateValidExtension(config.extension);
 
+  patternBase = typeof config.pattern === 'string' ? config.pattern : '(__LIST__)';
+
   var getResumeOf = config.getResumeOf === 'ALL' || config.getResumeOf === 'FOUND' ? config.getResumeOf : 'NOT_FOUND';
   var start = void 0,
       crono = void 0;
@@ -203,7 +205,7 @@ var doEach = function doEach(obj, func) {
 };
 
 var validExtension = { 'html': true, 'js': true, 'json': true };
-var patternBase = '[^\\w-](__LIST__)[^\\w-]';
+var patternBase = '';
 var findPattern = undefined;
 var findList = {};
 
