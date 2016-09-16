@@ -162,6 +162,7 @@ const startFind = function (config) {
   config.path = typeof(config.path) === 'string' ? [config.path] : config.path ;
   validatePathList(config.path);
 
+  config.extension = config.extension !== undefined ? config.extension : ['html', 'js', 'json'] ;
   config.extension = typeof(config.extension) === 'string' ? [config.extension] : config.extension ;
   updateValidExtension(config.extension);
 
