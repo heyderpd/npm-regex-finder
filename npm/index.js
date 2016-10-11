@@ -1,6 +1,6 @@
 "use strict";
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 /*!
  * regex-finder
@@ -162,6 +162,7 @@ var updateValidExtension = function updateValidExtension(extension) {
   }
 };
 
+// TODO multiple dir in path
 var startFind = function startFind(config) {
   if (config.list === undefined) {
     throw 'regex-finder: param "list" is undefined';

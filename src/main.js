@@ -155,6 +155,7 @@ const updateValidExtension = function (extension) {
   }
 };
 
+// TODO multiple dir in path
 const startFind = function (config) {
   if (config.list === undefined) { throw 'regex-finder: param "list" is undefined' };
   if (config.path  === undefined) { throw 'regex-finder: param "path" is undefined' };

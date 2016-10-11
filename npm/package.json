@@ -1,0 +1,28 @@
+{
+  "license": "MIT",
+  "name": "regex-finder",
+  "version": "0.3.1",
+  "description": "search recursively in directory with the provided list",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [
+    "find",
+    "regex",
+    "search",
+    "directory",
+    "recursive",
+    "path"
+  ],
+  "author": "NPM regex-finder <heyderpd@gmail.com> (http://heyderpd.github.io)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heyderpd/npm-regex-finder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/heyderpd/npm-regex-finder/issues"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "fs-extra": "^0.30.0"
+  }
+}

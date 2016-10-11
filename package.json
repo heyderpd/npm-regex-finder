@@ -1,32 +1,19 @@
 {
-  "name": "regex-finder",
-  "version": "0.2.7",
-  "description": "search recursively in directory with the provided list",
-  "main": "index.js",
+  "license": "MIT",
+  "author": "NPM cleardep <heyderpd@gmail.com> (http://heyderpd.github.io)",
+  "version": "0.0.0",
   "scripts": {
-    "transpile": "babel js/ -d dist/"
+    "transpile": "babel src/ --out-file npm/index.js",
+    "test": "mocha --compilers js:babel-register --reporter spec 'test/*.spec.js'",
+    "build": "npm run transpile | npm run test",
+    "web": "webpack --config"
   },
-  "keywords": [
-    "find",
-    "regex",
-    "search",
-    "directory",
-    "recursive",
-    "path"
-  ],
-  "author": "NPM regex-finder <heyderpd@gmail.com> (http://heyderpd.github.io)",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/heyderpd/npm-regex-finder.git"
-  },
-  "bugs": {
-    "url": "https://github.com/heyderpd/npm-regex-finder/issues"
-  },
-  "license": "ISC",
   "devDependencies": {
-    "babel-cli": "^6.14.0"
-  },
-  "dependencies": {
-    "fs-extra": "^0.30.0"
+    "babel-cli": "^6.16.0",
+    "babel-core": "^6.17.0",
+    "babel-polyfill": "^6.16.0",
+    "babel-preset-es2015": "^6.16.0",
+    "babel-register": "^6.16.3",
+    "webpack": "^1.13.2"
   }
 }
